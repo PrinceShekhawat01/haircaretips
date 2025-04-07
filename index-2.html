@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini API Demo</title>
+</head>
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100dvh;
+        width: 100dbw;
+        background-color: #0f2027;
+    }
+    #main{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 90%;
+        height: 90dvh;
+        /* background-color: black; */
+        color: aliceblue;
+    }
+    #response {
+    width: 90%;
+    height: 80%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: aliceblue;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid white;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: xx-large;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+#response::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari */
+}
+#input-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    height: 10%;
+    margin-top: 20px;
+    outline: none;
+    
+}
+    input[type="text"] {
+        width: 80%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 2px solid white;
+        font-size: large;
+        color: black;
+    }
+    button {
+        padding: 10px 20px;
+        margin-left: 10px;
+        background-color: lightblue;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        font-size: large;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: lightcyan;
+    }
+</style>
+<body>
+    <div id="main">
+        <pre id="response">Let's Chat ....</pre>
+        <div id="input-box">
+            <input type="text" id="prompt" placeholder="Enter your question" />
+            <button onclick="askGemini()">Submit</button></div></div>
+<script>
+    async function askGemini() {
+        const apiKey = "AIzaSyBYGLqxy-75-xH3i1Sao3n_SWobivgjuy8"; //
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        
+        const promptInput = document.getElementById('prompt');
+        const responseDisplay = document.getElementById('response');
+        const prompt = promptInput.value.trim();
+
+        if (!prompt) {
+            responseDisplay.innerText = "Please enter a prompt.";
+            return;
+        }
+
+        const requestBody = {
+            contents: [
+                {
+                    parts: [{ text: prompt }]
+                }
+            ]
+        };
+
+        responseDisplay.innerText = "Loading...";
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                responseDisplay.innerText = `API Error (${response.status}): ${errorText}`;
+                return;
+            }
+            const data = await response.json();
+
+
+            if (data.candidates && data.candidates.length > 0) {
+                const result = data.candidates[0].content?.parts?.[0]?.text || "No response text found.";
+                responseDisplay.innerText = result;
+
+                console.log(data);
+            } else {
+                responseDisplay.innerText = "No candidates found in response.";
+            }
+
+        } catch (error) {
+            responseDisplay.innerText = `Network or Parsing Error: ${error.message}`;
+        }
+    }
+</script>
+
+</body>
+</html>
